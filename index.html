@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>INVOICE</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+
+<button class="btn btn-primary gap-2 no-print" onclick="printInvoice()">
+  <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4" />
+  </svg>
+  Print
+</button>
+
+<div class="min-h-screen p-8">
+  <div class="mx-auto max-w-3xl rounded-lg bg-base-100 p-8">
+    <h1 class="text-2xl text-center ">INVOICE</h1>
+    <hr class="mt-1 pb-2">
+    </br>
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <h1 class="text-1xl font-bold text-slate-600 text-left">ALFA DEV TECNOLOGIA LTDA</h1>
+      <h2 class="text-ml text-left">FATURA # <input id="invoice_number" type="number" value="100" oninput="setPageTitle()"> </h2>
+    </header>
+
+    <main class="space-y-8">
+      <!-- Billing Section -->
+      <section class="prose">
+        <h3 class="text-slate-600 font-semibold">Cobrar a:</h3>
+        <div class="text-base-content">
+          Rebel Idealist LLC<br />
+          5 3rd St, Suite 900, San Francisco, CA 94103
+        </div>
+      </section>
+
+      <!-- Table -->
+      <div style="print-color-adjust: exact;">
+        <table class="table w-full table-zebra">
+          <thead>
+            <tr class="bg-gray-700 text-white">
+              <th>Descrição</th>
+              <th>Qtd</th>
+              <th>Valor Unit.</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Desenvolvimento de softwares e gerenciamento de equipes<br />
+                <strong>
+                  <select name="" id="invoice_range"></select>
+                </strong>
+              </td>
+              <td class="text-center" contenteditable="true">
+                1
+              </td>
+              <td class="invoice-price">R$ 20.514,38</td>
+              <td class="invoice-price">R$ 20.514,38</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card bg-base-100 w-full max-w-sm p-6 float-right">
+        <div class="space-y-4">
+          <!-- Price row -->
+          <div class="flex justify-between items-center">
+            <span class="text-base-content/70">Subtotal:</span>
+            <span class="font-semibold invoice-price">R$ 20.514,38</span>
+          </div>
+
+          <!-- Tax row -->
+          <div class="flex justify-between items-center">
+            <span class="text-base-content/70">Imposto (0%):</span>
+            <span class="font-semibold">R$ 0,00</span>
+          </div>
+
+          <!-- Divider -->
+          <div class="divider my-2"></div>
+
+          <!-- Total row -->
+          <div class="flex justify-between items-center">
+            <span class="text-lg font-semibold">Total:</span>
+            <span class="text-lg font-bold invoice-price">R$ 20.514,38</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+</body>
+
+<script>
+  function printInvoice() {
+    window.print();
+  }
+
+  (function() {
+    document.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("input", () => {
+        const url = new URL(window.location.href);
+        url.searchParams.set(input.name, input.value);
+        window.history.replaceState({}, "", url.toString());
+      });
+    });
+  })();
+
+  (function() {
+    const url = new URL(window.location.href);
+    const price = url.searchParams.get("price") ||  0;
+    const invoicePrices = document.querySelectorAll(".invoice-price");
+
+
+    invoicePrices.forEach((invoicePrice) => {
+      invoicePrice.innerHTML = price.toLocaleString("en-US", { style: "currency", currency: "USD" });
+    });
+  })();
+
+  (function() {
+    const invoiceRange = document.querySelector("#invoice_range");
+    let invoiceRangeCounter = 0;
+
+    for (let i = 0; i < 12; i++) {
+      const option = document.createElement("option");
+      option.value = i;
+
+      insertInvoiceRange(new Date(2025, i, 1), new Date(2025, i, 15));
+      insertInvoiceRange(new Date(2025, i, 16), new Date(2025, i, getLastDayOfMonth(i)));
+
+      function getLastDayOfMonth(month) {
+        const lastDay = new Date(2025, month + 1, 0);
+        return lastDay.getDate();
+      }
+
+      function insertInvoiceRange(startDate, endDate) {
+        const option = document.createElement("option");
+
+        option.value = invoiceRangeCounter++;
+        option.textContent = `${startDate.toLocaleDateString("pt-BR")} até ${endDate.toLocaleDateString("pt-BR")}`;
+        invoiceRange.appendChild(option);
+      }
+    }
+  })();
+
+
+  //function to set page title to invoice number
+  function setPageTitle() {
+    const invoiceNumber = document.querySelector("#invoice_number");
+    document.title = `INVOICE_${invoiceNumber.value}`;
+  }
+
+  invoice_number.addEventListener("input", () => {
+    const invoiceNumber = document.querySelector("#invoice_number");
+    const dataRange = document.querySelector("#invoice_range");
+
+    // set value on select invoice range, dataRange is a <select> tag element
+    dataRange.children[invoiceNumber.value - 100].selected = true;
+  });
+</script>
+
+<style>
+  @page {
+    size: Portrait;
+    page-break-after: avoid;
+
+    size: auto; /* auto is the initial value */
+    margin: 0; /* this affects the margin in the printer settings */
+  }
+
+  @media print {
+    body {
+      margin: minimum;
+      page-break-after: avoid;
+    }
+
+    .no-print { display: none;}
+  }
+
+  input { border: 0px; width: fit-content; }
+
+  #invoice_range {
+    display: inline;
+    appearance: none;
+    border: 0px;
+    background-color: transparent;
+    word-wrap: break-word;
+    text-align: left;
+    white-space: break-spaces;
+  }
+</style>
+
+</html>
