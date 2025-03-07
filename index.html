@@ -56,11 +56,9 @@
                   <select name="" id="invoice_range"></select>
                 </strong>
               </td>
-              <td class="text-center" contenteditable="true">
-                1
-              </td>
-              <td class="invoice-price">R$ 20.514,38</td>
-              <td class="invoice-price">R$ 20.514,38</td>
+              <td class="text-center service-quantity" contenteditable="true">1</td>
+              <td> <span class="service-price-currency" contenteditable="true">R$</span> <span class="service-price-value" contenteditable="true">20.514,38</span></td>
+              <td class="service-total"></td>
             </tr>
           </tbody>
         </table>
@@ -96,6 +94,51 @@
 </body>
 
 <script>
+  const config = {
+    first_invoice_number: 100,
+    currency: "USD",
+    currency_locale: "en-US",
+  }
+
+  function calculateServiceTotal() {
+    const serviceQuantity = document.querySelector(".service-quantity");
+    const servicePrice = document.querySelector(".service-price-value");
+    const serviceTotal = document.querySelector(".service-total");
+
+    serviceTotal.innerHTML = (parseInt(serviceQuantity.innerText) * parseFloat(servicePrice.innerText)).toLocaleString(config.currency_locale, { style: "currency", currency: config.currency });
+
+    serviceQuantity.addEventListener("input", () => {
+      trottle(calculateServiceTotal.bind(this), 100);
+    });
+
+    servicePrice.addEventListener("input", () => {
+      trottle(calculateServiceTotal.bind(this), 100);
+    });
+  }
+
+  calculateServiceTotal();
+
+  setInvoiceNumber(config.first_invoice_number);
+
+  function trottle(func, limit) {
+    let inThrottle;
+    return function() {
+      const args = arguments;
+      const context = this;
+
+      if (!inThrottle) {
+        func.apply(context, args);
+        inThrottle = true;
+        setTimeout(() => inThrottle = false, limit);
+      }
+    };
+  }
+
+  function setInvoiceNumber(invoiceNumber) {
+    const invoiceNumberInput = document.querySelector("#invoice_number");
+    invoiceNumberInput.value = invoiceNumber;
+  }
+
   function printInvoice() {
     window.print();
   }
@@ -159,7 +202,7 @@
     const dataRange = document.querySelector("#invoice_range");
 
     // set value on select invoice range, dataRange is a <select> tag element
-    dataRange.children[invoiceNumber.value - 100].selected = true;
+    dataRange.children[invoiceNumber.value - config.first_invoice_number].selected = true;
   });
 </script>
 
